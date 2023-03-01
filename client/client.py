@@ -30,7 +30,7 @@ def update_submission(submission_id, company_name, physical_address, annual_reve
 
     response = requests.put(f"{BASE_URL}/submissions/update/{submission_id}", json=payload)
     if response.status_code == 200:
-        print("Submission updated successfully")
+        print(f"Submission {submission_id} updated successfully")
         history.append(f"update_submission {submission_id} {company_name} {physical_address} {annual_revenue}")
     else:
         print(response.json().get("error"))
@@ -46,6 +46,16 @@ def get_submission(submission_id):
         print(response.json().get("error"))
 
 
+def bind_submission(submission_id, signed_application_path):
+    with open(signed_application_path, "rb") as f:
+        files = {"signed_application": f}
+        response = requests.put(f"{BASE_URL}/submissions/bind/{submission_id}", files=files)
+    if response.status_code == 200:
+        print("Submission bound successfully")
+        history.append(f"bind_submission {submission_id} {signed_application_path}")
+    else:
+        print(response.json().get("error"))
+
 
 if __name__ == '__main__':
     while True:
@@ -59,8 +69,11 @@ if __name__ == '__main__':
                     command)
                 update_submission(submission_id, company_name, physical_address, annual_revenue)
             elif command.startswith("GET SUBMISSION"):
-                submission_id = command.split(" ")
+                submission_id = parser.parse_get_submission_command(command)
                 get_submission(submission_id)
+            elif command.startswith("BIND SUBMISSION"):
+                submission_id, signed_application_path = parser.parse_bind_submission_command(command)
+                bind_submission(submission_id, signed_application_path)
 
         except ValueError as e:
             print(e)
