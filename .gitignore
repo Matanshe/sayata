@@ -2,5 +2,5 @@
 *.pyc
 *.pyo
 .idea/
-/server/applications/
+/server/submissions/
 server/submissions.db

@@ -1,12 +1,17 @@
+from flask import Blueprint, jsonify, request, send_from_directory, app
 import os
-
-from flask import Blueprint, jsonify, request
-
 import db
 
 submission_bp = Blueprint('submission_bp', __name__, url_prefix='/submissions')
 
-SERVER_BASE_URL= 'http://127.0.0.1:5000'
+SERVER_BASE_URL = 'http://127.0.0.1:5000'
+
+
+@submission_bp.route('/<filename>', methods=['GET'])
+def serve_file(filename):
+    if filename.endswith('.pdf'):
+        return send_from_directory('submissions', filename)
+    return jsonify(error='Route not found'), 404
 
 
 @submission_bp.route('/create', methods=['POST'])
@@ -58,7 +63,6 @@ def get_submission(submission_id):
         return jsonify(error=f'Error on getting submission {submission_id}'), 500
 
 
-
 @submission_bp.route('/bind/<submission_id>', methods=['PUT'])
 def bind_submission(submission_id):
     submission = db.get_submission_by_id(submission_id=submission_id)
@@ -67,8 +71,8 @@ def bind_submission(submission_id):
 
     signed_application = request.files.get('signed_application').read()
 
-    signed_application_path = f'{SERVER_BASE_URL}/applications/{submission_id}.pdf'
-    app_dir = os.path.abspath('applications')
+    signed_application_path = f'{SERVER_BASE_URL}/submissions/{submission_id}.pdf'
+    app_dir = os.path.abspath('submissions')
     file_path = os.path.join(app_dir, f'{submission_id}.pdf')
     with open(file_path, "wb") as f_out:
         f_out.write(signed_application)
