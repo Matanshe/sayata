@@ -41,6 +41,13 @@ def parse_get_submission_command(command_string):
 def parse_bind_submission_command(command_string):
     command_string = fix_quotation_marks(command_string)
     parts = command_string.split('"')
+    if len(parts) != 5:
+        raise ValueError("Invalid command format")
+
     submission_id = parts[1]
     signed_application_path = parts[3]
     return submission_id, signed_application_path
+
+
+def parse_list_submissions_command(command_string):
+    return "only_bound" in command_string
