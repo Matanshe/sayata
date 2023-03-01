@@ -1,9 +1,12 @@
+import os
+
 from flask import Blueprint, jsonify, request
 
 import db
-from models import Submission
 
 submission_bp = Blueprint('submission_bp', __name__, url_prefix='/submissions')
+
+SERVER_BASE_URL= 'http://127.0.0.1:5000'
 
 
 @submission_bp.route('/create', methods=['POST'])
@@ -15,69 +18,75 @@ def create_submission():
     if not company_name or not physical_address or not annual_revenue:
         return jsonify(error='Missing required fields'), 400
 
-    submission = Submission.query.filter_by(company_name=company_name, physical_address=physical_address).first()
-    if submission:
+    if db.check_submission_for_existence(company_name=company_name, physical_address=physical_address):
         return jsonify(error='Submission already exists'), 409
-
-    submission = Submission(company_name=company_name, physical_address=physical_address, annual_revenue=annual_revenue)
-    db.session.add(submission)
-    db.session.commit()
-
-    return jsonify(message=f'Submission {submission.id} created successfully'), 201
+    try:
+        id = db.create_submission(company_name=company_name, physical_address=physical_address,
+                                  annual_revenue=annual_revenue)
+        return jsonify(message=f'Submission {id} created successfully'), 201
+    except Exception as e:
+        return jsonify(error='Error on creating submission'), 500
 
 
 @submission_bp.route('/update/<submission_id>', methods=['PUT'])
 def update_submission(submission_id):
-    submission = Submission.query.filter_by(id=submission_id).first()
+    submission = db.get_submission_by_id(submission_id=submission_id)
     if not submission:
         return jsonify(error='Submission not found'), 404
 
-    submission.company_name = request.json.get('company_name', submission.company_name)
-    submission.physical_address = request.json.get('physical_address', submission.physical_address)
-    submission.annual_revenue = request.json.get('annual_revenue', submission.annual_revenue)
-
-    db.session.commit()
-
-    return jsonify(message='Submission updated successfully'), 200
+    company_name = request.json.get('company_name', submission.company_name)
+    physical_address = request.json.get('physical_address', submission.physical_address)
+    annual_revenue = request.json.get('annual_revenue', submission.annual_revenue)
+    try:
+        db.update_submission(submission_id, company_name, physical_address, annual_revenue)
+        return jsonify(message=f'Submission {submission_id} updated successfully'), 200
+    except Exception as e:
+        return jsonify(error='Error on updating submission'), 500
 
 
 @submission_bp.route('/get/<submission_id>', methods=['GET'])
 def get_submission(submission_id):
-    submission = Submission.query.filter_by(id=submission_id).first()
-    if not submission:
-        return jsonify(error='Submission not found'), 404
+    try:
+        submission = db.get_submission_by_id(submission_id=submission_id)
+        if not submission:
+            return jsonify(error='Submission not found'), 404
 
-    submission_dict = submission.__dict__
-    submission_dict.pop('_sa_instance_state')  # Remove SQLAlchemy state info
-    return jsonify(submission_dict), 200
+        submission_dict = submission.__dict__
+        del submission_dict["_sa_instance_state"]
+        return jsonify(submission_dict), 200
+    except Exception as e:
+        return jsonify(error=f'Error on getting submission {submission_id}'), 500
+
 
 
 @submission_bp.route('/bind/<submission_id>', methods=['PUT'])
 def bind_submission(submission_id):
-    submission = Submission.query.filter_by(id=submission_id).first()
+    submission = db.get_submission_by_id(submission_id=submission_id)
     if not submission:
         return jsonify(error='Submission not found'), 404
 
-    signed_application_path = request.json.get('signed_application_path')
-    if not signed_application_path:
-        return jsonify(error='Missing signed application path'), 400
+    signed_application = request.files.get('signed_application').read()
 
-    submission.signed_application_path = signed_application_path
-    submission.status = 'BOUND'
+    signed_application_path = f'{SERVER_BASE_URL}/applications/{submission_id}.pdf'
+    app_dir = os.path.abspath('applications')
+    file_path = os.path.join(app_dir, f'{submission_id}.pdf')
+    with open(file_path, "wb") as f_out:
+        f_out.write(signed_application)
 
-    db.session.commit()
+    if not signed_application:
+        return jsonify(error='Missing signed application file'), 400
 
-    return jsonify(message='Submission bound successfully'), 200
+    try:
+        db.bind_submission(submission_id=submission_id, signed_application_path=signed_application_path)
+        return jsonify(message=f'Submission bound successfully {submission_id}'), 200
+    except Exception as e:
+        return jsonify(error=f'Error on binding submission {submission_id}'), 500
 
 
 @submission_bp.route('/list', methods=['GET'])
 def list_submissions():
-    only_bound = request.args.get('only_bound', default=False, type=bool)
-
-    if only_bound:
-        submissions = Submission.query.filter_by(status='BOUND').all()
-    else:
-        submissions = Submission.query.all()
+    only_bound = bool('True' in request.args.get('only_bound', default='False'))
+    submissions = db.list_submissions(only_bound=only_bound)
 
     submissions_list = []
     for submission in submissions:
