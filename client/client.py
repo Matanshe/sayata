@@ -102,6 +102,7 @@ if __name__ == '__main__':
                 for command in history:
                     print(command)
             elif command == "exit":
+                print('Bye Bye')
                 break
             else:
                 print("Invalid command")
