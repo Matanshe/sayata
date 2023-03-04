@@ -3,17 +3,7 @@ def parse_create_submission_command(command_string):
     parts = command_string.split('"')
     if len(parts) != 5:
         raise ValueError("Invalid command format")
-
-    company_name = parts[1]
-    physical_address = parts[3]
-    annual_revenue = int(parts[4].strip())
-    return company_name, physical_address, annual_revenue
-
-
-def fix_quotation_marks(command_string):
-    command_string = command_string.replace('”', '"')
-    command_string = command_string.replace('“', '"')
-    return command_string
+    return parts[1], parts[3], int(parts[4].strip())
 
 
 def parse_update_submission_command(command_string):
@@ -21,12 +11,7 @@ def parse_update_submission_command(command_string):
     parts = command_string.split('"')
     if len(parts) != 7:
         raise ValueError("Invalid command format")
-
-    submission_id = parts[1]
-    company_name = parts[3]
-    physical_address = parts[5]
-    annual_revenue = int(parts[6].strip())
-    return submission_id, company_name, physical_address, annual_revenue
+    return parts[1], parts[3], parts[5], int(parts[6].strip())
 
 
 def parse_get_submission_command(command_string):
@@ -34,8 +19,7 @@ def parse_get_submission_command(command_string):
     parts = command_string.split('"')
     if len(parts) != 3:
         raise ValueError("Invalid command format")
-    submission_id = parts[1]
-    return submission_id
+    return parts[1]
 
 
 def parse_bind_submission_command(command_string):
@@ -43,11 +27,12 @@ def parse_bind_submission_command(command_string):
     parts = command_string.split('"')
     if len(parts) != 5:
         raise ValueError("Invalid command format")
-
-    submission_id = parts[1]
-    signed_application_path = parts[3]
-    return submission_id, signed_application_path
+    return parts[1], parts[3]
 
 
 def parse_list_submissions_command(command_string):
     return "only_bound" in command_string
+
+
+def fix_quotation_marks(command_string):
+    return command_string.replace('”', '"').replace('“', '"')
