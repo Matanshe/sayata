@@ -4,7 +4,7 @@ import db
 
 submission_bp = Blueprint('submission_bp', __name__, url_prefix='/submissions')
 
-SERVER_BASE_URL = 'http://127.0.0.1:5000'
+SERVER_BASE_URL = os.environ.get('SERVER_BASE_URL', 'http://127.0.0.1:5000')
 
 
 @submission_bp.route('/<filename>', methods=['GET'])

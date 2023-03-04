@@ -2,7 +2,7 @@ import os
 
 import requests
 
-BASE_URL = "http://localhost:5000"
+BASE_URL = "http://127.0.0.1:5000"
 
 
 def create_submission(company_name, physical_address, annual_revenue):

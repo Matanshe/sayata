@@ -6,6 +6,7 @@
 ```
 python3 app/main.py
 ```
+Please make sure that the server is up and running
 
 ## Supported operations
 - CREATE SUBMISSION “<company_name>” “<physical_address>” <annual_revenue>
