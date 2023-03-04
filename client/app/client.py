@@ -1,7 +1,7 @@
 import os
 import requests
 
-from submission_management.client.commands_parser import (
+from submission_management.client.app.commands_parser import (
     parse_create_submission_command,
     parse_update_submission_command,
     parse_get_submission_command,

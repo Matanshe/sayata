@@ -50,8 +50,7 @@ def bind_submission(submission_id, signed_application_path):
 
 
 def list_submissions(only_bound=False):
-    submissions = session.query(Submission).all()
+    submissions = session.query(Submission)
     if only_bound:
-        submissions = [s for s in submissions if s.status == "BOUND"]
-
-    return submissions
+        submissions = submissions.filter_by(status="BOUND")
+    return submissions.all()
