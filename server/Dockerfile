@@ -1,10 +1,8 @@
 FROM python:3.9-alpine
 
-EXPOSE 5001
+EXPOSE 5000
 
-COPY ./app .
-
-WORKDIR app
+COPY ./app ./app
 
 RUN apk add --no-cache gcc musl-dev libffi-dev openssl-dev python3-dev
 

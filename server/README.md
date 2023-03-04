@@ -4,7 +4,7 @@
 
 ## Run 
 1. `docker build -t submission-management-server .`
-2. `docker run -dp 5000:5000 submission-management-server`
+2. `docker run -p 5000:5000 submission-management-server`
 
 
 
