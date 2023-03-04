@@ -4,3 +4,5 @@
 .idea/
 /server/submissions/
 server/submissions.db
+/server/full_submission_forms
+*.DS_Store
